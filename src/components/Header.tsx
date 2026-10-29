@@ -1,7 +1,9 @@
 import React from 'react';
-import { Menu, Database, ShieldCheck, LogOut, User as UserIcon, Monitor, Smartphone } from 'lucide-react';
+import { Menu, Database, ShieldCheck, LogOut, User as UserIcon, Monitor, Smartphone, ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { isSupabaseConfigured } from '../lib/supabase';
+
+const SMP_PORTAL_URL = import.meta.env.VITE_SMP_PORTAL_URL || 'https://rekap-harian.vercel.app';
 
 interface HeaderProps {
   title: string;
@@ -94,6 +96,18 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           />
         </div>
+
+        {/* Switcher ke Portal SMP & SMA IT */}
+        <a
+          href={SMP_PORTAL_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold transition border border-emerald-300 bg-emerald-50 text-emerald-950 hover:bg-emerald-100 shadow-2xs"
+          title="Buka Aplikasi Keuangan Unit SMP IT & SMA IT Al-Qur'aniyyah"
+        >
+          <ExternalLink className="w-3.5 h-3.5 text-emerald-700" />
+          <span className="text-[11px] whitespace-nowrap">Portal SMP &amp; SMA IT</span>
+        </a>
 
         {/* User Info & Logout */}
         <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
