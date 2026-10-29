@@ -156,6 +156,7 @@ export const FinancialReportPage: React.FC = () => {
 
       // Process Units
       const uStats: Record<string, { count: Set<string>; bills: number; received: number }> = {
+        'TK IT': { count: new Set(), bills: 0, received: 0 },
         'SD IT': { count: new Set(), bills: 0, received: 0 },
       };
 

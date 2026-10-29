@@ -70,7 +70,7 @@ export const PaymentRecapPage: React.FC = () => {
 
   // Filters
   const [search, setSearch] = useState('');
-  const [unitFilter, setUnitFilter] = useState<'ALL' | 'SD IT'>('ALL');
+  const [unitFilter, setUnitFilter] = useState<'ALL' | 'TK IT' | 'SD IT'>('ALL');
   const [gradeFilter, setGradeFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [studentStatusFilter, setStudentStatusFilter] = useState<'ALL' | 'aktif' | 'nonaktif'>('aktif');
@@ -84,7 +84,7 @@ export const PaymentRecapPage: React.FC = () => {
   // Export Unpaid SPP Modal State
   const [showUnpaidExportModal, setShowUnpaidExportModal] = useState<boolean>(false);
   const [modalMonthTarget, setModalMonthTarget] = useState<string>('Oktober');
-  const [modalUnitTarget, setModalUnitTarget] = useState<'ALL' | 'SD IT'>('ALL');
+  const [modalUnitTarget, setModalUnitTarget] = useState<'ALL' | 'TK IT' | 'SD IT'>('ALL');
   const [modalGradeTarget, setModalGradeTarget] = useState<string>('ALL');
   const [modalAccumulatePrevious, setModalAccumulatePrevious] = useState<boolean>(true);
 
@@ -545,6 +545,7 @@ export const PaymentRecapPage: React.FC = () => {
               className="w-full py-1.5 px-2.5 text-xs font-medium rounded-lg sm:rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
             >
               <option value="ALL">Semua Jenjang</option>
+              <option value="TK IT">TK IT</option>
               <option value="SD IT">SD IT</option>
             </select>
           </div>
@@ -557,12 +558,18 @@ export const PaymentRecapPage: React.FC = () => {
               className="w-full py-1.5 px-2.5 text-xs font-medium rounded-lg sm:rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
             >
               <option value="ALL">Semua Kelas</option>
-              <option value="I">Kelas I</option>
-              <option value="II">Kelas II</option>
-              <option value="III">Kelas III</option>
-              <option value="IV">Kelas IV</option>
-              <option value="V">Kelas V</option>
-              <option value="VI">Kelas VI</option>
+              <optgroup label="TK IT">
+                <option value="A">Kelas A</option>
+                <option value="B">Kelas B</option>
+              </optgroup>
+              <optgroup label="SD IT">
+                <option value="I">Kelas I</option>
+                <option value="II">Kelas II</option>
+                <option value="III">Kelas III</option>
+                <option value="IV">Kelas IV</option>
+                <option value="V">Kelas V</option>
+                <option value="VI">Kelas VI</option>
+              </optgroup>
             </select>
           </div>
 
@@ -1294,6 +1301,7 @@ export const PaymentRecapPage: React.FC = () => {
                       className="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
                     >
                       <option value="ALL">Semua Jenjang</option>
+                      <option value="TK IT">TK IT</option>
                       <option value="SD IT">SD IT</option>
                     </select>
                   </div>
@@ -1308,12 +1316,18 @@ export const PaymentRecapPage: React.FC = () => {
                       className="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
                     >
                       <option value="ALL">Semua Kelas</option>
-                      <option value="I">Kelas I</option>
-                      <option value="II">Kelas II</option>
-                      <option value="III">Kelas III</option>
-                      <option value="IV">Kelas IV</option>
-                      <option value="V">Kelas V</option>
-                      <option value="VI">Kelas VI</option>
+                      <optgroup label="TK IT">
+                        <option value="A">Kelas A</option>
+                        <option value="B">Kelas B</option>
+                      </optgroup>
+                      <optgroup label="SD IT">
+                        <option value="I">Kelas I</option>
+                        <option value="II">Kelas II</option>
+                        <option value="III">Kelas III</option>
+                        <option value="IV">Kelas IV</option>
+                        <option value="V">Kelas V</option>
+                        <option value="VI">Kelas VI</option>
+                      </optgroup>
                     </select>
                   </div>
                 </div>

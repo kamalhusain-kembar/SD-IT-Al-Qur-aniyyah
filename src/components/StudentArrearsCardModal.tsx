@@ -180,7 +180,7 @@ export const StudentArrearsCardModal: React.FC<StudentArrearsCardModalProps> = (
   const handleCopyWhatsApp = () => {
     let text = `*RINCIAN TUNGGAKAN SISWA*\n`;
     text += `*YAYASAN AL-QUR'ANIYYAH*\n`;
-    text += `_SD IT Al-Qur'aniyyah_\n`;
+    text += `_TK & SD IT Al-Qur'aniyyah_\n`;
     text += `====================\n\n`;
     text += `Assalamu'alaikum Wr. Wb.\n\n`;
     text += `Kepada Yth.\n`;
@@ -356,7 +356,7 @@ export const StudentArrearsCardModal: React.FC<StudentArrearsCardModalProps> = (
                       Yayasan Pendidikan Islam Al-Qur'aniyyah
                     </h2>
                     <h3 className="text-xs sm:text-sm font-bold text-slate-800 leading-tight">
-                      SD IT Al-Qur'aniyyah
+                      TK IT &amp; SD IT Al-Qur'aniyyah
                     </h3>
                     <p className="text-[11px] text-slate-500 mt-0.5">
                       Pondok Aren, Tangerang Selatan · Sistem Rekapitulasi Keuangan Santri Lintas Tahun

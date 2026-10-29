@@ -1,18 +1,23 @@
 // ==============================================================================
-// TIPE DATA DATABASE SD IT AL-QUR'ANIYYAH
+// TIPE DATA DATABASE TK IT & SD IT AL-QUR'ANIYYAH
 // ==============================================================================
 
 export type Gender = 'Laki-laki' | 'Perempuan';
 export type StudentStatus = 'aktif' | 'lulus' | 'pindah' | 'nonaktif';
-export type UnitType = 'SD IT';
-export type GradeType = 'I' | 'II' | 'III' | 'IV' | 'V' | 'VI';
+export type UnitType = 'TK IT' | 'SD IT';
+export type GradeType = 'TK A' | 'TK B' | 'A' | 'B' | 'I' | 'II' | 'III' | 'IV' | 'V' | 'VI';
 export type AdministrativeStatus = 'Mampu' | 'Yatim' | 'Dhuafa' | 'Beasiswa' | 'Rekomendasi';
 export type BillStatus = 'Belum Dibayar' | 'Belum Lunas' | 'Lunas' | 'Bebas' | 'Akan Berlangsung';
 export type PaymentStatus = 'valid' | 'cancelled';
 export type AcademicYearStatus = 'active' | 'archived';
 export type CategoryType = 'monthly' | 'one_time';
 
-export const SDIT_GRADES: GradeType[] = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+export const TK_GRADES: string[] = ['A', 'B'];
+export const SDIT_GRADES: string[] = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+export const ALL_UNIT_GRADES: Record<UnitType, string[]> = {
+  'TK IT': ['A', 'B'],
+  'SD IT': ['I', 'II', 'III', 'IV', 'V', 'VI']
+};
 
 export interface AcademicYear {
   id: string;

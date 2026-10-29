@@ -23,12 +23,12 @@ import * as XLSX from 'xlsx';
 
 interface CategorySummary {
   name: string;
-  tagihanSMP: number;
-  bayarSMP: number;
-  sisaSMP: number;
-  tagihanSMA: number;
-  bayarSMA: number;
-  sisaSMA: number;
+  tagihanTK: number;
+  bayarTK: number;
+  sisaTK: number;
+  tagihanSD: number;
+  bayarSD: number;
+  sisaSD: number;
   tagihanTotal: number;
   bayarTotal: number;
   sisaTotal: number;
@@ -48,8 +48,8 @@ export interface StudentClassRecap {
 export const DashboardPage: React.FC = () => {
   const { selectedAcademicYearId, selectedAcademicYear, refreshKey } = useApp();
 
-  const [unitFilter, setUnitFilter] = useState<'ALL' | 'SD IT'>('ALL');
-  const [classRecapUnitFilter, setClassRecapUnitFilter] = useState<'ALL' | 'SD IT'>('ALL');
+  const [unitFilter, setUnitFilter] = useState<'ALL' | 'TK IT' | 'SD IT'>('ALL');
+  const [classRecapUnitFilter, setClassRecapUnitFilter] = useState<'ALL' | 'TK IT' | 'SD IT'>('ALL');
   const [isLoading, setIsLoading] = useState(true);
 
   // Stats
@@ -248,6 +248,8 @@ export const DashboardPage: React.FC = () => {
 
       // Initialize class recap
       const defaultRecaps: StudentClassRecap[] = [
+        { unit: 'TK IT', grade: 'A', lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 },
+        { unit: 'TK IT', grade: 'B', lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 },
         { unit: 'SD IT', grade: 'I', lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 },
         { unit: 'SD IT', grade: 'II', lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 },
         { unit: 'SD IT', grade: 'III', lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 },
@@ -273,7 +275,10 @@ export const DashboardPage: React.FC = () => {
           }
         }
 
-        const row = defaultRecaps.find((r) => r.unit === e.unit && r.grade === e.grade);
+        const normalizedGrade = (e.grade || '').replace(/^TK\s*/i, '');
+        const row = defaultRecaps.find(
+          (r) => r.unit === e.unit && (r.grade === e.grade || (r.unit === 'TK IT' && r.grade === normalizedGrade))
+        );
 
         // Gender counting (L / P)
         const g = (e.student?.gender || '').toString().trim().toLowerCase();
@@ -314,16 +319,16 @@ export const DashboardPage: React.FC = () => {
       const studentBalanceMap = new Map<string, { studentId: string; totalBills: number; totalPaid: number }>();
 
       const catMap: Record<string, {
-        smpTagihan: number; smpBayar: number;
-        smaTagihan: number; smaBayar: number;
+        tkTagihan: number; tkBayar: number;
+        sdTagihan: number; sdBayar: number;
       }> = {
-        'SPP': { smpTagihan: 0, smpBayar: 0, smaTagihan: 0, smaBayar: 0 },
-        'Perlengkapan': { smpTagihan: 0, smpBayar: 0, smaTagihan: 0, smaBayar: 0 },
-        'Peralatan': { smpTagihan: 0, smpBayar: 0, smaTagihan: 0, smaBayar: 0 },
-        'Kegiatan': { smpTagihan: 0, smpBayar: 0, smaTagihan: 0, smaBayar: 0 },
-        'Pembangunan': { smpTagihan: 0, smpBayar: 0, smaTagihan: 0, smaBayar: 0 },
-        'Ujian': { smpTagihan: 0, smpBayar: 0, smaTagihan: 0, smaBayar: 0 },
-        'Lainnya': { smpTagihan: 0, smpBayar: 0, smaTagihan: 0, smaBayar: 0 },
+        'SPP': { tkTagihan: 0, tkBayar: 0, sdTagihan: 0, sdBayar: 0 },
+        'Perlengkapan': { tkTagihan: 0, tkBayar: 0, sdTagihan: 0, sdBayar: 0 },
+        'Peralatan': { tkTagihan: 0, tkBayar: 0, sdTagihan: 0, sdBayar: 0 },
+        'Kegiatan': { tkTagihan: 0, tkBayar: 0, sdTagihan: 0, sdBayar: 0 },
+        'Pembangunan': { tkTagihan: 0, tkBayar: 0, sdTagihan: 0, sdBayar: 0 },
+        'Ujian': { tkTagihan: 0, tkBayar: 0, sdTagihan: 0, sdBayar: 0 },
+        'Lainnya': { tkTagihan: 0, tkBayar: 0, sdTagihan: 0, sdBayar: 0 },
       };
 
       const sppMonthMap: Record<string, { target: number; collected: number }> = {};
@@ -334,7 +339,7 @@ export const DashboardPage: React.FC = () => {
       let sumActiveDueBills = 0;
 
       for (const bill of bills || []) {
-        const studentUnit = studentUnitMap.get(bill.student_id) || 'SMP IT';
+        const studentUnit = studentUnitMap.get(bill.student_id) || 'SD IT';
         const billAmount = Number(bill.amount || 0);
         const paidAmount = Number(bill.paidAmount || 0);
 
@@ -373,8 +378,13 @@ export const DashboardPage: React.FC = () => {
         }
 
         if (!isUpcoming || paidAmount > 0) {
-          if (bill.status !== 'Bebas') catMap[catName].smpTagihan += billAmount;
-          catMap[catName].smpBayar += paidAmount;
+          if (studentUnit === 'TK IT') {
+            if (bill.status !== 'Bebas') catMap[catName].tkTagihan += billAmount;
+            catMap[catName].tkBayar += paidAmount;
+          } else {
+            if (bill.status !== 'Bebas') catMap[catName].sdTagihan += billAmount;
+            catMap[catName].sdBayar += paidAmount;
+          }
         }
 
         if (catName === 'SPP' && bill.billing_period && sppMonthMap[bill.billing_period]) {
@@ -415,20 +425,20 @@ export const DashboardPage: React.FC = () => {
       const catOrder = ['SPP', 'Perlengkapan', 'Peralatan', 'Kegiatan', 'Pembangunan', 'Ujian', 'Lainnya'];
       const builtSummaries: CategorySummary[] = catOrder.map((catKey) => {
         const data = catMap[catKey];
-        const sisaSMP = Math.max(0, data.smpTagihan - data.smpBayar);
-        const sisaSMA = Math.max(0, data.smaTagihan - data.smaBayar);
-        const tagihanTotal = data.smpTagihan + data.smaTagihan;
-        const bayarTotal = data.smpBayar + data.smaBayar;
+        const sisaTK = Math.max(0, data.tkTagihan - data.tkBayar);
+        const sisaSD = Math.max(0, data.sdTagihan - data.sdBayar);
+        const tagihanTotal = data.tkTagihan + data.sdTagihan;
+        const bayarTotal = data.tkBayar + data.sdBayar;
         const sisaTotal = Math.max(0, tagihanTotal - bayarTotal);
 
         return {
           name: catKey === 'SPP' ? 'INFAQ SYAHRIYYAH (SPP)' : catKey.toUpperCase(),
-          tagihanSMP: data.smpTagihan,
-          bayarSMP: data.smpBayar,
-          sisaSMP,
-          tagihanSMA: data.smaTagihan,
-          bayarSMA: data.smaBayar,
-          sisaSMA,
+          tagihanTK: data.tkTagihan,
+          bayarTK: data.tkBayar,
+          sisaTK,
+          tagihanSD: data.sdTagihan,
+          bayarSD: data.sdBayar,
+          sisaSD,
           tagihanTotal,
           bayarTotal,
           sisaTotal,
@@ -516,28 +526,28 @@ export const DashboardPage: React.FC = () => {
 
     exportRows.push({
       'No': '' as any,
-      'Jenjang': 'SUBTOTAL SMP IT',
-      'Kelas': 'VII - IX',
-      'Laki-laki (L)': smpTotal.lakiLaki,
-      'Perempuan (P)': smpTotal.perempuan,
-      'Mampu (Reguler)': smpTotal.mampu,
-      'Yatim (Bebas Biaya)': smpTotal.yatim,
-      'Lainnya (Beasiswa/Dhuafa)': smpTotal.lainnya,
-      'Total Siswa': smpTotal.total,
-      'Persentase Mampu (%)': smpTotal.total > 0 ? ((smpTotal.mampu / smpTotal.total) * 100).toFixed(1) + '%' : '0%',
+      'Jenjang': 'SUBTOTAL TK IT',
+      'Kelas': 'Kelas A & B',
+      'Laki-laki (L)': tkSubtotal.lakiLaki,
+      'Perempuan (P)': tkSubtotal.perempuan,
+      'Mampu (Reguler)': tkSubtotal.mampu,
+      'Yatim (Bebas Biaya)': tkSubtotal.yatim,
+      'Lainnya (Beasiswa/Dhuafa)': tkSubtotal.lainnya,
+      'Total Siswa': tkSubtotal.total,
+      'Persentase Mampu (%)': tkSubtotal.total > 0 ? ((tkSubtotal.mampu / tkSubtotal.total) * 100).toFixed(1) + '%' : '0%',
     });
 
     exportRows.push({
       'No': '' as any,
-      'Jenjang': 'SUBTOTAL SMA IT',
-      'Kelas': 'X - XII',
-      'Laki-laki (L)': smaTotal.lakiLaki,
-      'Perempuan (P)': smaTotal.perempuan,
-      'Mampu (Reguler)': smaTotal.mampu,
-      'Yatim (Bebas Biaya)': smaTotal.yatim,
-      'Lainnya (Beasiswa/Dhuafa)': smaTotal.lainnya,
-      'Total Siswa': smaTotal.total,
-      'Persentase Mampu (%)': smaTotal.total > 0 ? ((smaTotal.mampu / smaTotal.total) * 100).toFixed(1) + '%' : '0%',
+      'Jenjang': 'SUBTOTAL SD IT',
+      'Kelas': 'Kelas I - VI',
+      'Laki-laki (L)': sdSubtotal.lakiLaki,
+      'Perempuan (P)': sdSubtotal.perempuan,
+      'Mampu (Reguler)': sdSubtotal.mampu,
+      'Yatim (Bebas Biaya)': sdSubtotal.yatim,
+      'Lainnya (Beasiswa/Dhuafa)': sdSubtotal.lainnya,
+      'Total Siswa': sdSubtotal.total,
+      'Persentase Mampu (%)': sdSubtotal.total > 0 ? ((sdSubtotal.mampu / sdSubtotal.total) * 100).toFixed(1) + '%' : '0%',
     });
 
     exportRows.push({
@@ -564,7 +574,7 @@ export const DashboardPage: React.FC = () => {
     return r.unit === classRecapUnitFilter;
   });
 
-  const smpSubtotal = classRecapList.filter((r) => r.unit === 'SMP IT').reduce((acc, r) => ({
+  const tkSubtotal = classRecapList.filter((r) => r.unit === 'TK IT').reduce((acc, r) => ({
     lakiLaki: acc.lakiLaki + r.lakiLaki,
     perempuan: acc.perempuan + r.perempuan,
     mampu: acc.mampu + r.mampu,
@@ -573,7 +583,7 @@ export const DashboardPage: React.FC = () => {
     total: acc.total + r.total,
   }), { lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 });
 
-  const smaSubtotal = classRecapList.filter((r) => r.unit === 'SMA IT').reduce((acc, r) => ({
+  const sdSubtotal = classRecapList.filter((r) => r.unit === 'SD IT').reduce((acc, r) => ({
     lakiLaki: acc.lakiLaki + r.lakiLaki,
     perempuan: acc.perempuan + r.perempuan,
     mampu: acc.mampu + r.mampu,
@@ -595,7 +605,7 @@ export const DashboardPage: React.FC = () => {
             Dashboard Keuangan Yayasan Al-Qur’aniyyah
           </h2>
           <p className="text-emerald-200/80 text-xs sm:text-sm mt-1 max-w-2xl hidden xs:block">
-            Ringkasan data real-time penerimaan Infaq Syahriyyah (SPP), perlengkapan, pembangunan, dan rekap tunggakan siswa unit SMP IT & SMA IT.
+            Ringkasan data real-time penerimaan Infaq Syahriyyah (SPP), perlengkapan, pembangunan, dan rekap tunggakan siswa unit TK IT &amp; SD IT.
           </p>
         </div>
 
@@ -682,9 +692,38 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2.5">
-            <span className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-900 border border-emerald-200 text-xs font-bold shadow-2xs">
-              Jenjang SD IT (Kelas I - VI)
-            </span>
+            <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50 text-xs font-medium">
+              <button
+                onClick={() => setClassRecapUnitFilter('ALL')}
+                className={`px-3 py-1.5 rounded-md transition ${
+                  classRecapUnitFilter === 'ALL'
+                    ? 'bg-white text-slate-800 font-bold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Semua Jenjang
+              </button>
+              <button
+                onClick={() => setClassRecapUnitFilter('TK IT')}
+                className={`px-3 py-1.5 rounded-md transition ${
+                  classRecapUnitFilter === 'TK IT'
+                    ? 'bg-white text-amber-800 font-bold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                TK IT (A &amp; B)
+              </button>
+              <button
+                onClick={() => setClassRecapUnitFilter('SD IT')}
+                className={`px-3 py-1.5 rounded-md transition ${
+                  classRecapUnitFilter === 'SD IT'
+                    ? 'bg-white text-emerald-800 font-bold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                SD IT (I - VI)
+              </button>
+            </div>
 
             <button
               onClick={handleExportClassRecap}
@@ -812,20 +851,59 @@ export const DashboardPage: React.FC = () => {
               })}
             </tbody>
             <tfoot>
-              <tr className="bg-slate-900 font-bold text-white border-t-2 border-slate-800">
-                <td className="py-3 px-4 text-left font-extrabold pl-6" colSpan={3}>
-                  TOTAL SISWA SD IT (Kelas I - VI)
-                </td>
-                <td className="py-3 px-4 text-right font-bold tabular-nums text-slate-200">{totalLaki}</td>
-                <td className="py-3 px-4 text-right font-bold tabular-nums text-slate-200">{totalPerempuan}</td>
-                <td className="py-3 px-4 text-right font-bold tabular-nums text-emerald-300">{totalMampu}</td>
-                <td className="py-3 px-4 text-right font-bold tabular-nums text-slate-200">{totalYatim}</td>
-                <td className="py-3 px-4 text-right font-bold tabular-nums text-slate-200">{totalLainnya}</td>
-                <td className="py-3 px-4 text-right font-black tabular-nums text-gold-400">{activeStudentsCount}</td>
-                <td className="py-3 px-4 text-center text-emerald-300 font-bold">
-                  {activeStudentsCount > 0 ? ((totalMampu / activeStudentsCount) * 100).toFixed(1) : 0}%
-                </td>
-              </tr>
+              {/* Subtotal TK IT */}
+              {(classRecapUnitFilter === 'ALL' || classRecapUnitFilter === 'TK IT') && (
+                <tr className="bg-amber-50/80 font-semibold text-slate-800 border-t border-slate-200">
+                  <td className="py-2.5 px-4 text-left font-bold pl-6 text-amber-900" colSpan={3}>
+                    Subtotal TK IT (Kelas A &amp; B)
+                  </td>
+                  <td className="py-2.5 px-4 text-right font-semibold text-slate-800 tabular-nums">{tkSubtotal.lakiLaki}</td>
+                  <td className="py-2.5 px-4 text-right font-semibold text-slate-800 tabular-nums">{tkSubtotal.perempuan}</td>
+                  <td className="py-2.5 px-4 text-right font-semibold text-slate-800 tabular-nums">{tkSubtotal.mampu}</td>
+                  <td className="py-2.5 px-4 text-right font-semibold text-slate-800 tabular-nums">{tkSubtotal.yatim}</td>
+                  <td className="py-2.5 px-4 text-right font-semibold text-slate-800 tabular-nums">{tkSubtotal.lainnya}</td>
+                  <td className="py-2.5 px-4 text-right font-bold text-slate-900 tabular-nums">{tkSubtotal.total}</td>
+                  <td className="py-2.5 px-4 text-center text-slate-600 font-medium">
+                    {tkSubtotal.total > 0 ? ((tkSubtotal.mampu / tkSubtotal.total) * 100).toFixed(1) : 0}%
+                  </td>
+                </tr>
+              )}
+
+              {/* Subtotal SD IT */}
+              {(classRecapUnitFilter === 'ALL' || classRecapUnitFilter === 'SD IT') && (
+                <tr className="bg-emerald-50/80 font-semibold text-slate-800 border-t border-slate-200">
+                  <td className="py-2.5 px-4 text-left font-bold pl-6 text-emerald-900" colSpan={3}>
+                    Subtotal SD IT (Kelas I - VI)
+                  </td>
+                  <td className="py-2.5 px-4 text-right font-semibold text-slate-800 tabular-nums">{sdSubtotal.lakiLaki}</td>
+                  <td className="py-2.5 px-4 text-right font-semibold text-slate-800 tabular-nums">{sdSubtotal.perempuan}</td>
+                  <td className="py-2.5 px-4 text-right font-semibold text-slate-800 tabular-nums">{sdSubtotal.mampu}</td>
+                  <td className="py-2.5 px-4 text-right font-semibold text-slate-800 tabular-nums">{sdSubtotal.yatim}</td>
+                  <td className="py-2.5 px-4 text-right font-semibold text-slate-800 tabular-nums">{sdSubtotal.lainnya}</td>
+                  <td className="py-2.5 px-4 text-right font-bold text-slate-900 tabular-nums">{sdSubtotal.total}</td>
+                  <td className="py-2.5 px-4 text-center text-slate-600 font-medium">
+                    {sdSubtotal.total > 0 ? ((sdSubtotal.mampu / sdSubtotal.total) * 100).toFixed(1) : 0}%
+                  </td>
+                </tr>
+              )}
+
+              {/* Grand Total */}
+              {classRecapUnitFilter === 'ALL' && (
+                <tr className="bg-slate-900 font-bold text-white border-t-2 border-slate-800">
+                  <td className="py-3 px-4 text-left font-extrabold pl-6" colSpan={3}>
+                    TOTAL KESELURUHAN (TK IT &amp; SD IT)
+                  </td>
+                  <td className="py-3 px-4 text-right font-bold tabular-nums text-slate-200">{totalLaki}</td>
+                  <td className="py-3 px-4 text-right font-bold tabular-nums text-slate-200">{totalPerempuan}</td>
+                  <td className="py-3 px-4 text-right font-bold tabular-nums text-emerald-300">{totalMampu}</td>
+                  <td className="py-3 px-4 text-right font-bold tabular-nums text-slate-200">{totalYatim}</td>
+                  <td className="py-3 px-4 text-right font-bold tabular-nums text-slate-200">{totalLainnya}</td>
+                  <td className="py-3 px-4 text-right font-black tabular-nums text-gold-400">{activeStudentsCount}</td>
+                  <td className="py-3 px-4 text-center text-emerald-300 font-bold">
+                    {activeStudentsCount > 0 ? ((totalMampu / activeStudentsCount) * 100).toFixed(1) : 0}%
+                  </td>
+                </tr>
+              )}
             </tfoot>
           </table>
         </div>
@@ -836,7 +914,7 @@ export const DashboardPage: React.FC = () => {
         <div className="px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
           <div>
             <h3 className="text-base font-bold text-slate-800">
-              Rekapitulasi Keuangan Per Item (SMP IT & SMA IT)
+              Rekapitulasi Keuangan Per Item (TK IT &amp; SD IT)
             </h3>
             <p className="text-xs text-slate-500">
               Kewajiban aktif berjalan s/d Oktober (bulan mendatang belum dihitung sebagai tunggakan)
@@ -844,9 +922,33 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
-              Unit SD IT Al-Qur'aniyyah
-            </span>
+            <span className="text-xs font-semibold text-slate-500">Filter Tampilan:</span>
+            <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-white text-xs font-semibold">
+              <button
+                onClick={() => setUnitFilter('ALL')}
+                className={`px-3 py-1.5 rounded-md transition ${
+                  unitFilter === 'ALL' ? 'bg-emerald-800 text-white' : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                Seluruh Unit
+              </button>
+              <button
+                onClick={() => setUnitFilter('TK IT')}
+                className={`px-3 py-1.5 rounded-md transition ${
+                  unitFilter === 'TK IT' ? 'bg-amber-800 text-white' : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                TK IT
+              </button>
+              <button
+                onClick={() => setUnitFilter('SD IT')}
+                className={`px-3 py-1.5 rounded-md transition ${
+                  unitFilter === 'SD IT' ? 'bg-emerald-800 text-white' : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                SD IT
+              </button>
+            </div>
           </div>
         </div>
 
@@ -856,70 +958,126 @@ export const DashboardPage: React.FC = () => {
               <tr className="bg-emerald-950 text-white font-bold uppercase tracking-wider text-[11px]">
                 <th className="py-3.5 px-4 border-b border-emerald-900 w-12 text-center">No</th>
                 <th className="py-3.5 px-4 border-b border-emerald-900">Item Keuangan</th>
-                <th className="py-3.5 px-4 border-b border-emerald-900 text-right bg-emerald-900/60">
-                  Total Tagihan SD IT
-                </th>
-                <th className="py-3.5 px-4 border-b border-emerald-900 text-right bg-emerald-850/60">
-                  Total Masuk
-                </th>
-                <th className="py-3.5 px-4 border-b border-emerald-900 text-right bg-rose-950/40">
-                  Sisa Tunggakan
-                </th>
-                <th className="py-3.5 px-4 border-b border-emerald-900 text-center w-28">
-                  Kolektibilitas
-                </th>
+                {(unitFilter === 'ALL' || unitFilter === 'TK IT') && (
+                  <>
+                    <th className="py-3.5 px-4 border-b border-emerald-900 text-right bg-amber-950/60">
+                      Tagihan TK
+                    </th>
+                    <th className="py-3.5 px-4 border-b border-emerald-900 text-right bg-amber-950/60">
+                      Masuk TK
+                    </th>
+                    <th className="py-3.5 px-4 border-b border-emerald-900 text-right bg-amber-950/60">
+                      Sisa TK
+                    </th>
+                  </>
+                )}
+                {(unitFilter === 'ALL' || unitFilter === 'SD IT') && (
+                  <>
+                    <th className="py-3.5 px-4 border-b border-emerald-900 text-right bg-emerald-900/60">
+                      Tagihan SD
+                    </th>
+                    <th className="py-3.5 px-4 border-b border-emerald-900 text-right bg-emerald-900/60">
+                      Masuk SD
+                    </th>
+                    <th className="py-3.5 px-4 border-b border-emerald-900 text-right bg-emerald-900/60">
+                      Sisa SD
+                    </th>
+                  </>
+                )}
+                {unitFilter === 'ALL' && (
+                  <>
+                    <th className="py-3.5 px-4 border-b border-emerald-900 text-right bg-slate-900">
+                      Total Tagihan
+                    </th>
+                    <th className="py-3.5 px-4 border-b border-emerald-900 text-right bg-emerald-900">
+                      Total Masuk
+                    </th>
+                    <th className="py-3.5 px-4 border-b border-emerald-900 text-right bg-rose-950">
+                      Total Sisa
+                    </th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
-              {categorySummaries.map((item, idx) => {
-                const tagihan = item.tagihanSMP;
-                const bayar = item.bayarSMP;
-                const sisa = item.sisaSMP;
-                const pct = tagihan > 0 ? (bayar / tagihan) * 100 : 0;
-                return (
-                  <tr key={item.name} className="hover:bg-emerald-50/40 transition">
-                    <td className="py-3 px-4 text-center font-bold text-slate-400">{idx + 1}</td>
-                    <td className="py-3 px-4 font-bold text-slate-800">{item.name}</td>
-                    <td className="py-3 px-4 text-right text-slate-700 font-semibold">{formatRupiah(tagihan)}</td>
-                    <td className="py-3 px-4 text-right text-emerald-700 font-bold">{formatRupiah(bayar)}</td>
-                    <td className="py-3 px-4 text-right text-rose-600 font-bold">{formatRupiah(sisa)}</td>
-                    <td className="py-3 px-4 text-center font-bold text-slate-600">
-                      <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
-                        pct >= 80 ? 'bg-emerald-100 text-emerald-800' : pct >= 40 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'
-                      }`}>
-                        {pct.toFixed(1)}%
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
+              {categorySummaries.map((item, idx) => (
+                <tr key={item.name} className="hover:bg-emerald-50/40 transition">
+                  <td className="py-3 px-4 text-center font-bold text-slate-400">{idx + 1}</td>
+                  <td className="py-3 px-4 font-bold text-slate-800">{item.name}</td>
+                  {(unitFilter === 'ALL' || unitFilter === 'TK IT') && (
+                    <>
+                      <td className="py-3 px-4 text-right text-slate-600">{formatRupiah(item.tagihanTK)}</td>
+                      <td className="py-3 px-4 text-right text-emerald-700 font-semibold">{formatRupiah(item.bayarTK)}</td>
+                      <td className="py-3 px-4 text-right text-rose-600 font-semibold">{formatRupiah(item.sisaTK)}</td>
+                    </>
+                  )}
+                  {(unitFilter === 'ALL' || unitFilter === 'SD IT') && (
+                    <>
+                      <td className="py-3 px-4 text-right text-slate-600">{formatRupiah(item.tagihanSD)}</td>
+                      <td className="py-3 px-4 text-right text-emerald-700 font-semibold">{formatRupiah(item.bayarSD)}</td>
+                      <td className="py-3 px-4 text-right text-rose-600 font-semibold">{formatRupiah(item.sisaSD)}</td>
+                    </>
+                  )}
+                  {unitFilter === 'ALL' && (
+                    <>
+                      <td className="py-3 px-4 text-right font-bold text-slate-800 bg-slate-50/60">
+                        {formatRupiah(item.tagihanTotal)}
+                      </td>
+                      <td className="py-3 px-4 text-right font-bold text-emerald-800 bg-emerald-50/40">
+                        {formatRupiah(item.bayarTotal)}
+                      </td>
+                      <td className="py-3 px-4 text-right font-bold text-rose-700 bg-rose-50/30">
+                        {formatRupiah(item.sisaTotal)}
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))}
             </tbody>
             <tfoot>
               <tr className="bg-slate-100 font-black text-slate-900 border-t-2 border-slate-300">
                 <td className="py-3.5 px-4 text-center" colSpan={2}>
                   TOTAL KESELURUHAN
                 </td>
-                <td className="py-3.5 px-4 text-right text-slate-800">
-                  {formatRupiah(categorySummaries.reduce((s, c) => s + c.tagihanSMP, 0))}
-                </td>
-                <td className="py-3.5 px-4 text-right text-emerald-800 font-bold">
-                  {formatRupiah(categorySummaries.reduce((s, c) => s + c.bayarSMP, 0))}
-                </td>
-                <td className="py-3.5 px-4 text-right text-rose-700 font-bold">
-                  {formatRupiah(categorySummaries.reduce((s, c) => s + c.sisaSMP, 0))}
-                </td>
-                <td className="py-3.5 px-4 text-center">
-                  {(() => {
-                    const totTag = categorySummaries.reduce((s, c) => s + c.tagihanSMP, 0);
-                    const totBay = categorySummaries.reduce((s, c) => s + c.bayarSMP, 0);
-                    const totPct = totTag > 0 ? (totBay / totTag) * 100 : 0;
-                    return (
-                      <span className="font-bold text-emerald-800">
-                        {totPct.toFixed(1)}%
-                      </span>
-                    );
-                  })()}
-                </td>
+                {(unitFilter === 'ALL' || unitFilter === 'TK IT') && (
+                  <>
+                    <td className="py-3.5 px-4 text-right">
+                      {formatRupiah(categorySummaries.reduce((s, c) => s + c.tagihanTK, 0))}
+                    </td>
+                    <td className="py-3.5 px-4 text-right text-emerald-800">
+                      {formatRupiah(categorySummaries.reduce((s, c) => s + c.bayarTK, 0))}
+                    </td>
+                    <td className="py-3.5 px-4 text-right text-rose-700">
+                      {formatRupiah(categorySummaries.reduce((s, c) => s + c.sisaTK, 0))}
+                    </td>
+                  </>
+                )}
+                {(unitFilter === 'ALL' || unitFilter === 'SD IT') && (
+                  <>
+                    <td className="py-3.5 px-4 text-right">
+                      {formatRupiah(categorySummaries.reduce((s, c) => s + c.tagihanSD, 0))}
+                    </td>
+                    <td className="py-3.5 px-4 text-right text-emerald-800">
+                      {formatRupiah(categorySummaries.reduce((s, c) => s + c.bayarSD, 0))}
+                    </td>
+                    <td className="py-3.5 px-4 text-right text-rose-700">
+                      {formatRupiah(categorySummaries.reduce((s, c) => s + c.sisaSD, 0))}
+                    </td>
+                  </>
+                )}
+                {unitFilter === 'ALL' && (
+                  <>
+                    <td className="py-3.5 px-4 text-right bg-slate-200">
+                      {formatRupiah(totalBills)}
+                    </td>
+                    <td className="py-3.5 px-4 text-right text-emerald-850 bg-emerald-100">
+                      {formatRupiah(totalPayments)}
+                    </td>
+                    <td className="py-3.5 px-4 text-right text-rose-800 bg-rose-100">
+                      {formatRupiah(totalArrears)}
+                    </td>
+                  </>
+                )}
               </tr>
             </tfoot>
           </table>

@@ -85,7 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             />
             <div>
               <h1 className="font-bold text-base text-white tracking-wide leading-tight">
-                SD IT Al-Qur’aniyyah
+                TK &amp; SD IT Al-Qur’aniyyah
               </h1>
               <p className="text-xs text-emerald-300/80 font-medium">Administrasi Keuangan</p>
             </div>
@@ -159,7 +159,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Footer info */}
         <div className="p-4 border-t border-emerald-900/80 bg-emerald-950/80 text-xs text-emerald-300/70 text-center">
-          <p className="font-semibold text-emerald-200">SD IT Al-Qur'aniyyah</p>
+          <p className="font-semibold text-emerald-200">TK IT &amp; SD IT</p>
           <p className="text-[11px] text-emerald-400/60 mt-0.5">Sistem Terintegrasi Online</p>
         </div>
       </aside>

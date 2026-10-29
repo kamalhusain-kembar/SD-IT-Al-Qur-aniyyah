@@ -30,7 +30,7 @@ export const CrossYearArrearsPage: React.FC = () => {
 
   // Filters
   const [academicYearFilter, setAcademicYearFilter] = useState<string>('ALL'); // 'ALL' = Semua Tahun Ajaran!
-  const [unitFilter, setUnitFilter] = useState<'ALL' | 'SD IT'>('ALL');
+  const [unitFilter, setUnitFilter] = useState<'ALL' | 'TK IT' | 'SD IT'>('ALL');
   const [gradeFilter, setGradeFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'menunggak' | 'lunas'>('menunggak');
   const [search, setSearch] = useState('');
@@ -166,17 +166,35 @@ export const CrossYearArrearsPage: React.FC = () => {
 
           <div>
             <select
+              value={unitFilter}
+              onChange={(e) => setUnitFilter(e.target.value as any)}
+              className="w-full py-1.5 px-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-700 bg-white"
+            >
+              <option value="ALL">Semua Jenjang</option>
+              <option value="TK IT">TK IT</option>
+              <option value="SD IT">SD IT</option>
+            </select>
+          </div>
+
+          <div>
+            <select
               value={gradeFilter}
               onChange={(e) => setGradeFilter(e.target.value)}
               className="w-full py-1.5 px-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-700 bg-white"
             >
-              <option value="ALL">Semua Kelas (I - VI)</option>
-              <option value="I">Kelas I</option>
-              <option value="II">Kelas II</option>
-              <option value="III">Kelas III</option>
-              <option value="IV">Kelas IV</option>
-              <option value="V">Kelas V</option>
-              <option value="VI">Kelas VI</option>
+              <option value="ALL">Semua Kelas</option>
+              <optgroup label="TK IT">
+                <option value="A">TK A</option>
+                <option value="B">TK B</option>
+              </optgroup>
+              <optgroup label="SD IT">
+                <option value="I">Kelas I</option>
+                <option value="II">Kelas II</option>
+                <option value="III">Kelas III</option>
+                <option value="IV">Kelas IV</option>
+                <option value="V">Kelas V</option>
+                <option value="VI">Kelas VI</option>
+              </optgroup>
             </select>
           </div>
 

@@ -156,8 +156,10 @@ export const excelService = {
         rawNis = null;
       }
 
-      const unit: UnitType = 'SD IT';
-      const grade = String(row[colIdx.grade] || 'I').trim();
+      const unitRaw = String(row[colIdx.unit] || 'SD IT').trim();
+      const unit: UnitType = unitRaw.toUpperCase().includes('TK') ? 'TK IT' : 'SD IT';
+      const defaultGrade = unit === 'TK IT' ? 'A' : 'I';
+      const grade = String(row[colIdx.grade] || defaultGrade).trim();
 
       const sppNominal = Number(row[colIdx.spp] || 0);
       const isFreeSPP = status === 'Yatim' || status === 'Beasiswa' || sppNominal === 0;

@@ -393,6 +393,7 @@ export const StudentsPage: React.FC = () => {
               className="w-full py-1.5 px-2.5 text-xs font-medium rounded-lg sm:rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
             >
               <option value="ALL">Semua Jenjang</option>
+              <option value="TK IT">TK IT</option>
               <option value="SD IT">SD IT</option>
             </select>
           </div>
@@ -405,12 +406,18 @@ export const StudentsPage: React.FC = () => {
               className="w-full py-1.5 px-2.5 text-xs font-medium rounded-lg sm:rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
             >
               <option value="ALL">Semua Kelas</option>
-              <option value="I">Kelas I</option>
-              <option value="II">Kelas II</option>
-              <option value="III">Kelas III</option>
-              <option value="IV">Kelas IV</option>
-              <option value="V">Kelas V</option>
-              <option value="VI">Kelas VI</option>
+              <optgroup label="TK IT">
+                <option value="A">Kelas A</option>
+                <option value="B">Kelas B</option>
+              </optgroup>
+              <optgroup label="SD IT">
+                <option value="I">Kelas I</option>
+                <option value="II">Kelas II</option>
+                <option value="III">Kelas III</option>
+                <option value="IV">Kelas IV</option>
+                <option value="V">Kelas V</option>
+                <option value="VI">Kelas VI</option>
+              </optgroup>
             </select>
           </div>
 
@@ -679,9 +686,14 @@ export const StudentsPage: React.FC = () => {
                     <label className="block text-[11px] font-semibold text-slate-600 mb-1">Jenjang</label>
                     <select
                       value={formData.unit}
-                      onChange={(e) => setFormData({ ...formData, unit: e.target.value as UnitType })}
+                      onChange={(e) => {
+                        const newUnit = e.target.value as UnitType;
+                        const defaultGrade = newUnit === 'TK IT' ? 'A' : 'I';
+                        setFormData({ ...formData, unit: newUnit, grade: defaultGrade });
+                      }}
                       className="w-full text-xs font-medium px-2 py-1.5 rounded-lg border border-slate-300 bg-white"
                     >
+                      <option value="TK IT">TK IT</option>
                       <option value="SD IT">SD IT</option>
                     </select>
                   </div>
@@ -693,12 +705,21 @@ export const StudentsPage: React.FC = () => {
                       onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
                       className="w-full text-xs font-medium px-2 py-1.5 rounded-lg border border-slate-300 bg-white"
                     >
-                      <option value="I">Kelas I</option>
-                      <option value="II">Kelas II</option>
-                      <option value="III">Kelas III</option>
-                      <option value="IV">Kelas IV</option>
-                      <option value="V">Kelas V</option>
-                      <option value="VI">Kelas VI</option>
+                      {formData.unit === 'TK IT' ? (
+                        <>
+                          <option value="A">Kelas A</option>
+                          <option value="B">Kelas B</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="I">Kelas I</option>
+                          <option value="II">Kelas II</option>
+                          <option value="III">Kelas III</option>
+                          <option value="IV">Kelas IV</option>
+                          <option value="V">Kelas V</option>
+                          <option value="VI">Kelas VI</option>
+                        </>
+                      )}
                     </select>
                   </div>
 
