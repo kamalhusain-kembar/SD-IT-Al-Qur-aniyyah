@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased selection:bg-emerald-200 selection:text-emerald-950;
+  }
+}
+
+/* Custom scrollbars for tables and drawers */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Print styling for Student Arrears Card / PDF Export */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  body * {
+    visibility: hidden;
+  }
+
+  #student-arrears-printable-card,
+  #student-arrears-printable-card * {
+    visibility: visible;
+  }
+
+  #student-arrears-printable-card {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 8mm 10mm !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+}

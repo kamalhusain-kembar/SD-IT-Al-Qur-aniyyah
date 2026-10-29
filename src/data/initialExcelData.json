@@ -1,0 +1,26 @@
+{
+  "academic_years": [
+    {
+      "id": "4a8cc60d-1202-4d48-a8bb-d03b0aa75f10",
+      "name": "2026/2027",
+      "start_date": "2026-07-01",
+      "end_date": "2027-06-30",
+      "status": "active"
+    }
+  ],
+  "categories": [
+    { "id": "f1507091-5ebf-4354-aa94-a18fc762307b", "name": "SPP", "category_type": "monthly", "order_index": 1, "is_active": true },
+    { "id": "fe08d52b-9a0a-43dd-8694-6b3baa460162", "name": "Perlengkapan", "category_type": "one_time", "order_index": 2, "is_active": true },
+    { "id": "2314f89c-586a-43f5-b5e3-a751862d519d", "name": "Peralatan", "category_type": "one_time", "order_index": 3, "is_active": true },
+    { "id": "a07c4831-d5f3-4cea-a750-dbaae0630b2e", "name": "Kegiatan", "category_type": "one_time", "order_index": 4, "is_active": true },
+    { "id": "b8f3b9a6-93bf-4e0d-8d30-d082e81fe7eb", "name": "Pembangunan", "category_type": "one_time", "order_index": 5, "is_active": true },
+    { "id": "94379632-2fd2-4981-8d15-946baf6090f3", "name": "Ujian", "category_type": "one_time", "order_index": 6, "is_active": true },
+    { "id": "6c6ecafb-41a7-401b-984f-de7f74d2a005", "name": "Buku Paket", "category_type": "one_time", "order_index": 7, "is_active": true },
+    { "id": "ac25f685-4ef1-4cbb-89cd-a08dcbc5c3bc", "name": "Lainnya", "category_type": "one_time", "order_index": 8, "is_active": true }
+  ],
+  "students": [],
+  "enrollments": [],
+  "bills": [],
+  "payments": [],
+  "payment_allocations": []
+}
