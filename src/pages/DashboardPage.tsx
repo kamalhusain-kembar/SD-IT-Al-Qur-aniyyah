@@ -19,6 +19,7 @@ import { useApp } from '../context/AppContext';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { SPP_MONTHS, isUpcomingSPPMonth } from '../services/billingService';
 import { localStore } from '../services/dataStore';
+import { isGradeMatch, formatGradeDisplay } from '../types/database';
 import * as XLSX from 'xlsx';
 
 interface CategorySummary {
@@ -248,8 +249,8 @@ export const DashboardPage: React.FC = () => {
 
       // Initialize class recap
       const defaultRecaps: StudentClassRecap[] = [
-        { unit: 'TK IT', grade: 'A', lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 },
-        { unit: 'TK IT', grade: 'B', lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 },
+        { unit: 'TK IT', grade: 'Kelompok A', lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 },
+        { unit: 'TK IT', grade: 'Kelompok B', lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 },
         { unit: 'SD IT', grade: 'I', lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 },
         { unit: 'SD IT', grade: 'II', lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 },
         { unit: 'SD IT', grade: 'III', lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 },
@@ -275,9 +276,8 @@ export const DashboardPage: React.FC = () => {
           }
         }
 
-        const normalizedGrade = (e.grade || '').replace(/^TK\s*/i, '');
         const row = defaultRecaps.find(
-          (r) => r.unit === e.unit && (r.grade === e.grade || (r.unit === 'TK IT' && r.grade === normalizedGrade))
+          (r) => r.unit === e.unit && isGradeMatch(e.grade, r.grade, e.unit)
         );
 
         // Gender counting (L / P)
@@ -468,7 +468,7 @@ export const DashboardPage: React.FC = () => {
         id: s.studentId,
         name: studentNameMap.get(s.studentId) || 'Siswa',
         nis: studentNisMap.get(s.studentId),
-        unit: studentUnitMap.get(s.studentId) || 'SMP IT',
+        unit: studentUnitMap.get(s.studentId) || 'SD IT',
         grade: studentGradeMap.get(s.studentId) || '-',
         remaining: s.remaining,
       }));
@@ -506,28 +506,10 @@ export const DashboardPage: React.FC = () => {
     }));
 
     // Subtotal rows
-    const smpTotal = classRecapList.filter((r) => r.unit === 'SMP IT').reduce((acc, r) => ({
-      lakiLaki: acc.lakiLaki + r.lakiLaki,
-      perempuan: acc.perempuan + r.perempuan,
-      mampu: acc.mampu + r.mampu,
-      yatim: acc.yatim + r.yatim,
-      lainnya: acc.lainnya + r.lainnya,
-      total: acc.total + r.total,
-    }), { lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 });
-
-    const smaTotal = classRecapList.filter((r) => r.unit === 'SMA IT').reduce((acc, r) => ({
-      lakiLaki: acc.lakiLaki + r.lakiLaki,
-      perempuan: acc.perempuan + r.perempuan,
-      mampu: acc.mampu + r.mampu,
-      yatim: acc.yatim + r.yatim,
-      lainnya: acc.lainnya + r.lainnya,
-      total: acc.total + r.total,
-    }), { lakiLaki: 0, perempuan: 0, mampu: 0, yatim: 0, lainnya: 0, total: 0 });
-
     exportRows.push({
       'No': '' as any,
       'Jenjang': 'SUBTOTAL TK IT',
-      'Kelas': 'Kelas A & B',
+      'Kelas': 'Kelompok A & B',
       'Laki-laki (L)': tkSubtotal.lakiLaki,
       'Perempuan (P)': tkSubtotal.perempuan,
       'Mampu (Reguler)': tkSubtotal.mampu,
@@ -813,15 +795,15 @@ export const DashboardPage: React.FC = () => {
                     <td className="py-2.5 px-4 text-center text-slate-400 font-medium">{idx + 1}</td>
                     <td className="py-2.5 px-4">
                       <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold border ${
-                        row.unit === 'SMP IT'
-                          ? 'bg-emerald-50/80 text-emerald-800 border-emerald-200/60'
-                          : 'bg-blue-50/80 text-blue-800 border-blue-200/60'
+                        row.unit === 'TK IT'
+                          ? 'bg-amber-50/80 text-amber-800 border-amber-200/60'
+                          : 'bg-emerald-50/80 text-emerald-800 border-emerald-200/60'
                       }`}>
                         {row.unit}
                       </span>
                     </td>
-                    <td className="py-2.5 px-4 text-center font-semibold text-slate-800">
-                      Kelas {row.grade}
+                    <td className="py-2.5 px-4 text-center font-semibold text-slate-800 whitespace-nowrap">
+                      {formatGradeDisplay(row.grade, row.unit)}
                     </td>
                     <td className="py-2.5 px-4 text-right font-medium text-slate-700 tabular-nums">
                       {row.lakiLaki}
@@ -855,7 +837,7 @@ export const DashboardPage: React.FC = () => {
               {(classRecapUnitFilter === 'ALL' || classRecapUnitFilter === 'TK IT') && (
                 <tr className="bg-amber-50/80 font-semibold text-slate-800 border-t border-slate-200">
                   <td className="py-2.5 px-4 text-left font-bold pl-6 text-amber-900" colSpan={3}>
-                    Subtotal TK IT (Kelas A &amp; B)
+                    Subtotal TK IT (Kelompok A &amp; B)
                   </td>
                   <td className="py-2.5 px-4 text-right font-semibold text-slate-800 tabular-nums">{tkSubtotal.lakiLaki}</td>
                   <td className="py-2.5 px-4 text-right font-semibold text-slate-800 tabular-nums">{tkSubtotal.perempuan}</td>
@@ -1155,7 +1137,7 @@ export const DashboardPage: React.FC = () => {
                     <div>
                       <p className="font-bold text-slate-800">{st.name}</p>
                       <p className="text-[11px] text-slate-400">
-                        {st.unit} · Kelas {st.grade}
+                        {st.unit} · {formatGradeDisplay(st.grade, st.unit)}
                       </p>
                     </div>
                     <div className="text-right">

@@ -19,7 +19,7 @@ import {
 import { useApp } from '../context/AppContext';
 import { arrearsService } from '../services/arrearsService';
 import { excelService } from '../services/excelService';
-import { StudentCrossYearArrears, StudentYearlyArrears } from '../types/database';
+import { StudentCrossYearArrears, StudentYearlyArrears, formatGradeDisplay, SDIT_GRADES } from '../types/database';
 import { StudentArrearsCardModal } from '../components/StudentArrearsCardModal';
 
 export const CrossYearArrearsPage: React.FC = () => {
@@ -167,7 +167,10 @@ export const CrossYearArrearsPage: React.FC = () => {
           <div>
             <select
               value={unitFilter}
-              onChange={(e) => setUnitFilter(e.target.value as any)}
+              onChange={(e) => {
+                setUnitFilter(e.target.value as any);
+                setGradeFilter('ALL');
+              }}
               className="w-full py-1.5 px-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-700 bg-white"
             >
               <option value="ALL">Semua Jenjang</option>
@@ -182,19 +185,35 @@ export const CrossYearArrearsPage: React.FC = () => {
               onChange={(e) => setGradeFilter(e.target.value)}
               className="w-full py-1.5 px-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-700 bg-white"
             >
-              <option value="ALL">Semua Kelas</option>
-              <optgroup label="TK IT">
-                <option value="A">TK A</option>
-                <option value="B">TK B</option>
-              </optgroup>
-              <optgroup label="SD IT">
-                <option value="I">Kelas I</option>
-                <option value="II">Kelas II</option>
-                <option value="III">Kelas III</option>
-                <option value="IV">Kelas IV</option>
-                <option value="V">Kelas V</option>
-                <option value="VI">Kelas VI</option>
-              </optgroup>
+              <option value="ALL">
+                {unitFilter === 'TK IT' ? 'Semua Kelas TK' : unitFilter === 'SD IT' ? 'Semua Kelas SD' : 'Semua Kelas'}
+              </option>
+              {unitFilter === 'TK IT' && (
+                <>
+                  <option value="Kelompok A">Kelompok A</option>
+                  <option value="Kelompok B">Kelompok B</option>
+                </>
+              )}
+              {unitFilter === 'SD IT' && (
+                <>
+                  {SDIT_GRADES.map((g) => (
+                    <option key={g} value={g}>Kelas {g}</option>
+                  ))}
+                </>
+              )}
+              {unitFilter === 'ALL' && (
+                <>
+                  <optgroup label="TK IT">
+                    <option value="Kelompok A">Kelompok A</option>
+                    <option value="Kelompok B">Kelompok B</option>
+                  </optgroup>
+                  <optgroup label="SD IT">
+                    {SDIT_GRADES.map((g) => (
+                      <option key={g} value={g}>Kelas {g}</option>
+                    ))}
+                  </optgroup>
+                </>
+              )}
             </select>
           </div>
 
@@ -281,7 +300,7 @@ export const CrossYearArrearsPage: React.FC = () => {
                       {item.student.nis || '-'}
                     </td>
                     <td className="py-2 px-3 font-semibold text-slate-700 whitespace-nowrap">
-                      {item.current_unit || 'SD IT'} · Kelas {item.current_grade || '-'}
+                      {item.current_unit || 'SD IT'} · {formatGradeDisplay(item.current_grade, item.current_unit)}
                     </td>
                     <td className="py-2 px-3">
                       {/* Breakdown pills per academic year */}

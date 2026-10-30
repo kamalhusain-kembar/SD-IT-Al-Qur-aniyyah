@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { StudentCrossYearArrears, StudentYearlyArrears, BillStatus, Student, StudentEnrollment, Bill } from '../types/database';
+import { StudentCrossYearArrears, StudentYearlyArrears, BillStatus, Student, StudentEnrollment, Bill, isGradeMatch } from '../types/database';
 import { localStore } from './dataStore';
 import { isUpcomingSPPMonth } from './billingService';
 
@@ -39,7 +39,7 @@ export const arrearsService = {
         const currentEnr = enrollments[0];
 
         if (filters.unit && filters.unit !== 'ALL' && currentEnr?.unit !== filters.unit) continue;
-        if (filters.grade && filters.grade !== 'ALL' && currentEnr?.grade !== filters.grade) continue;
+        if (filters.grade && filters.grade !== 'ALL' && !isGradeMatch(currentEnr?.grade, filters.grade, currentEnr?.unit)) continue;
 
         // Student's bills
         let studentBills = allBills.filter((b) => b.student_id === st.id);
@@ -98,7 +98,7 @@ export const arrearsService = {
             academic_year_id: yr.id,
             academic_year_name: yr.name,
             grade: enrForYr?.grade || '-',
-            unit: enrForYr?.unit || 'SMP IT',
+            unit: enrForYr?.unit || 'SD IT',
             total_bills: totalBills,
             total_paid: totalPaid,
             remaining_arrears: totalRem,
@@ -340,7 +340,7 @@ export const arrearsService = {
           if (currentEnrollment?.unit !== filters.unit) continue;
         }
         if (filters.grade && filters.grade !== 'ALL') {
-          if (currentEnrollment?.grade !== filters.grade) continue;
+          if (!isGradeMatch(currentEnrollment?.grade, filters.grade, currentEnrollment?.unit)) continue;
         }
 
         const yearsMap = new Map<string, StudentYearlyArrears>();

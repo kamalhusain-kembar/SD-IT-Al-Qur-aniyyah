@@ -5,19 +5,62 @@
 export type Gender = 'Laki-laki' | 'Perempuan';
 export type StudentStatus = 'aktif' | 'lulus' | 'pindah' | 'nonaktif';
 export type UnitType = 'TK IT' | 'SD IT';
-export type GradeType = 'TK A' | 'TK B' | 'A' | 'B' | 'I' | 'II' | 'III' | 'IV' | 'V' | 'VI';
+export type GradeType = 'Kelompok A' | 'Kelompok B' | 'Kel. A' | 'Kel. B' | 'TK A' | 'TK B' | 'A' | 'B' | 'I' | 'II' | 'III' | 'IV' | 'V' | 'VI';
 export type AdministrativeStatus = 'Mampu' | 'Yatim' | 'Dhuafa' | 'Beasiswa' | 'Rekomendasi';
 export type BillStatus = 'Belum Dibayar' | 'Belum Lunas' | 'Lunas' | 'Bebas' | 'Akan Berlangsung';
 export type PaymentStatus = 'valid' | 'cancelled';
 export type AcademicYearStatus = 'active' | 'archived';
 export type CategoryType = 'monthly' | 'one_time';
 
-export const TK_GRADES: string[] = ['A', 'B'];
+export const TK_GRADES: string[] = ['Kelompok A', 'Kelompok B'];
 export const SDIT_GRADES: string[] = ['I', 'II', 'III', 'IV', 'V', 'VI'];
 export const ALL_UNIT_GRADES: Record<UnitType, string[]> = {
-  'TK IT': ['A', 'B'],
+  'TK IT': ['Kelompok A', 'Kelompok B'],
   'SD IT': ['I', 'II', 'III', 'IV', 'V', 'VI']
 };
+
+/**
+ * Normalisasi parameter kelas agar kompatibel antara 'Kelompok A', 'Kel. A', 'TK A', dan 'A'
+ */
+export function normalizeGrade(grade?: string | null, unit?: string | null): string {
+  if (!grade) return '-';
+  const g = grade.trim();
+  const isTK = unit === 'TK IT' || /^(kel|tk)/i.test(g) || g === 'A' || g === 'B';
+  if (isTK) {
+    if (/^(kelompok\s*a|kel\.?\s*a|tk\s*a|^a$)/i.test(g)) return 'Kelompok A';
+    if (/^(kelompok\s*b|kel\.?\s*b|tk\s*b|^b$)/i.test(g)) return 'Kelompok B';
+  }
+  return g;
+}
+
+/**
+ * Format label tampilan kelas untuk UI:
+ * TK IT -> "Kelompok A"
+ * SD IT -> "Kelas I"
+ */
+export function formatGradeDisplay(grade?: string | null, unit?: string | null): string {
+  if (!grade || grade === '-') return '-';
+  const norm = normalizeGrade(grade, unit);
+  if (unit === 'TK IT' || norm.startsWith('Kelompok')) {
+    return norm;
+  }
+  return `Kelas ${norm}`;
+}
+
+/**
+ * Cek apakah kelas siswa cocok dengan filter pencarian
+ */
+export function isGradeMatch(studentGrade?: string | null, filterGrade?: string, unit?: string | null): boolean {
+  if (!filterGrade || filterGrade === 'ALL') return true;
+  if (!studentGrade) return false;
+  
+  const normStudent = normalizeGrade(studentGrade, unit);
+  const normFilter = normalizeGrade(filterGrade, unit);
+  
+  if (normStudent.toLowerCase() === normFilter.toLowerCase()) return true;
+  if (studentGrade.trim().toLowerCase() === filterGrade.trim().toLowerCase()) return true;
+  return false;
+}
 
 export interface AcademicYear {
   id: string;

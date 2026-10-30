@@ -17,7 +17,7 @@ import { useApp } from '../context/AppContext';
 import { studentService } from '../services/studentService';
 import { billingService, SPP_MONTHS } from '../services/billingService';
 import { paymentService } from '../services/paymentService';
-import { Student, Bill, Payment } from '../types/database';
+import { Student, Bill, Payment, formatGradeDisplay } from '../types/database';
 
 export const PaymentsPage: React.FC = () => {
   const { selectedAcademicYearId, selectedAcademicYear, showToast, refreshKey, triggerRefresh } = useApp();
@@ -283,7 +283,7 @@ export const PaymentsPage: React.FC = () => {
                           <div>
                             <p className="font-bold text-slate-800">{s.full_name}</p>
                             <p className="text-[11px] text-slate-400">
-                              NIS: {s.nis || '-'} · {s.current_enrollment?.unit || 'SMP IT'} · Kelas {s.current_enrollment?.grade || '-'}
+                              NIS: {s.nis || '-'} · {s.current_enrollment?.unit || 'SD IT'} · {formatGradeDisplay(s.current_enrollment?.grade, s.current_enrollment?.unit)}
                             </p>
                           </div>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
@@ -303,7 +303,7 @@ export const PaymentsPage: React.FC = () => {
                     <div>
                       <p className="font-bold text-sm text-emerald-950">{selectedStudent.full_name}</p>
                       <p className="text-xs text-emerald-800">
-                        NIS: {selectedStudent.nis || '-'} · {selectedStudent.current_enrollment?.unit || 'SMP IT'} Kelas {selectedStudent.current_enrollment?.grade || '-'} ({selectedStudent.current_enrollment?.administrative_status || 'Mampu'})
+                        NIS: {selectedStudent.nis || '-'} · {selectedStudent.current_enrollment?.unit || 'SD IT'} · {formatGradeDisplay(selectedStudent.current_enrollment?.grade, selectedStudent.current_enrollment?.unit)} ({selectedStudent.current_enrollment?.administrative_status || 'Mampu'})
                       </p>
                     </div>
                   </div>

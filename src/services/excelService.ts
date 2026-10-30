@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx';
 import { supabase } from '../lib/supabase';
-import { UnitType, AdministrativeStatus, Gender } from '../types/database';
+import { UnitType, AdministrativeStatus, Gender, normalizeGrade } from '../types/database';
 import { SPP_MONTHS } from './billingService';
 
 export interface ImportPreviewItem {
@@ -158,8 +158,9 @@ export const excelService = {
 
       const unitRaw = String(row[colIdx.unit] || 'SD IT').trim();
       const unit: UnitType = unitRaw.toUpperCase().includes('TK') ? 'TK IT' : 'SD IT';
-      const defaultGrade = unit === 'TK IT' ? 'A' : 'I';
-      const grade = String(row[colIdx.grade] || defaultGrade).trim();
+      const defaultGrade = unit === 'TK IT' ? 'Kelompok A' : 'I';
+      const rawGrade = String(row[colIdx.grade] || defaultGrade).trim();
+      const grade = normalizeGrade(rawGrade, unit);
 
       const sppNominal = Number(row[colIdx.spp] || 0);
       const isFreeSPP = status === 'Yatim' || status === 'Beasiswa' || sppNominal === 0;
@@ -636,7 +637,7 @@ export const excelService = {
 
     const sheetData: any[][] = [
       ["YAYASAN PENDIDIKAN ISLAM PONDOK PESANTREN AL-QUR'ANIYYAH"],
-      ["SMP IT & SMA IT AL-QUR'ANIYYAH · PONDOK AREN TANGERANG SELATAN"],
+      ["TK IT & SD IT AL-QUR'ANIYYAH · PONDOK AREN TANGERANG SELATAN"],
       ["REKAPITULASI DAFTAR TAGIHAN TUNGGAKAN SPP SISWA"],
       [`Tahun Ajaran: ${academicYearName}  |  Posisi Tagihan s.d. Bulan: SPP ${targetMonth}  |  Tanggal Cetak: ${dateFormatted}`],
       ["Rekening Resmi: Bank Syariah Indonesia (BSI) 7110256118 a.n. Yayasan Al-Qur'aniyyah | Konfirmasi WA: 0857-1723-5374 (Bendahara: Nasrulloh)"],
@@ -738,14 +739,14 @@ export const excelService = {
         "STATUS": "Mampu",
         "NO TELPON": "081234567890",
         "NO REKENING": "202607001",
-        "JENJANG": "SMP IT",
-        "KELAS": "VII A",
-        "SPP": 1335000,
-        "PERLENGKAPAN": 500000,
-        "PERALATAN": 250000,
-        "KEGIATAN": 300000,
+        "JENJANG": "TK IT",
+        "KELAS": "Kelompok A",
+        "SPP": 850000,
+        "PERLENGKAPAN": 400000,
+        "PERALATAN": 200000,
+        "KEGIATAN": 250000,
         "PEMBANGUNAN": 1000000,
-        "UJIAN": 200000,
+        "UJIAN": 150000,
         "LAINNYA": 0
       },
       {
@@ -755,8 +756,8 @@ export const excelService = {
         "STATUS": "Yatim",
         "NO TELPON": "081298765432",
         "NO REKENING": "202607002",
-        "JENJANG": "SMA IT",
-        "KELAS": "X IPA",
+        "JENJANG": "SD IT",
+        "KELAS": "I",
         "SPP": 0,
         "PERLENGKAPAN": 500000,
         "PERALATAN": 250000,
@@ -772,8 +773,8 @@ export const excelService = {
         "STATUS": "Mampu",
         "NO TELPON": "085612345678",
         "NO REKENING": "202607003",
-        "JENJANG": "SMP IT",
-        "KELAS": "VIII B",
+        "JENJANG": "SD IT",
+        "KELAS": "II",
         "SPP": 1250000,
         "PERLENGKAPAN": 0,
         "PERALATAN": 0,
@@ -791,9 +792,9 @@ export const excelService = {
         "JK": "L",
         "STATUS": "Mampu",
         "NO REKENING": "202607001",
-        "JENJANG": "SMP IT",
-        "KELAS": "VII A",
-        "SPP": 1335000,
+        "JENJANG": "TK IT",
+        "KELAS": "Kelompok A",
+        "SPP": 850000,
         "Juli": "2026-07-25",
         "Agustus": "2026-08-28",
         "September": "",
@@ -806,8 +807,8 @@ export const excelService = {
         "April": "",
         "Mei": "",
         "Juni": "",
-        "PERLENGKAPAN": 500000,
-        "PERALATAN": 250000,
+        "PERLENGKAPAN": 400000,
+        "PERALATAN": 200000,
         "KEGIATAN": 0,
         "PEMBANGUNAN": 500000,
         "UJIAN": 0,
@@ -820,8 +821,8 @@ export const excelService = {
         "JK": "P",
         "STATUS": "Yatim",
         "NO REKENING": "202607002",
-        "JENJANG": "SMA IT",
-        "KELAS": "X IPA",
+        "JENJANG": "SD IT",
+        "KELAS": "I",
         "SPP": 0,
         "Juli": "Free",
         "Agustus": "Free",
@@ -849,8 +850,8 @@ export const excelService = {
         "JK": "L",
         "STATUS": "Mampu",
         "NO REKENING": "202607003",
-        "JENJANG": "SMP IT",
-        "KELAS": "VIII B",
+        "JENJANG": "SD IT",
+        "KELAS": "II",
         "SPP": 1250000,
         "Juli": "2026-07-20",
         "Agustus": "",
@@ -882,8 +883,8 @@ export const excelService = {
       { "BAGIAN": "STATUS", "KETERANGAN": "Status administrasi: Mampu, Yatim, Dhuafa, Beasiswa, atau Rekomendasi." },
       { "BAGIAN": "NO TELPON", "KETERANGAN": "Nomor WhatsApp aktif orang tua / wali." },
       { "BAGIAN": "NO REKENING / NIS", "KETERANGAN": "Nomor Induk Siswa (NIS) atau No Rekening virtual account." },
-      { "BAGIAN": "JENJANG", "KETERANGAN": "Jenjang pendidikan: TK IT, SD IT, SMP IT, atau SMA IT." },
-      { "BAGIAN": "KELAS", "KETERANGAN": "Tingkat kelas (contoh: VII A, VIII, IX, X, XI, XII)." },
+      { "BAGIAN": "JENJANG", "KETERANGAN": "Jenjang pendidikan: TK IT atau SD IT." },
+      { "BAGIAN": "KELAS", "KETERANGAN": "Tingkat kelas (contoh: Kelompok A, Kelompok B untuk TK IT; I, II, III, IV, V, VI untuk SD IT)." },
       { "BAGIAN": "SPP", "KETERANGAN": "Tarif SPP bulanan siswa (contoh: 1335000). Jika gratis isi 0." },
       { "BAGIAN": "PERLENGKAPAN dll", "KETERANGAN": "Nominal kewajiban tagihan non-SPP selama 1 tahun ajaran." },
       { "BAGIAN": "-----------------", "KETERANGAN": "------------------------------------------------------------------" },

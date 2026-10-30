@@ -28,7 +28,7 @@ import { billingService, SPP_MONTHS } from '../services/billingService';
 import { paymentService } from '../services/paymentService';
 import { excelService } from '../services/excelService';
 import { localStore } from '../services/dataStore';
-import { Student, Bill, UnitType, BillStatus } from '../types/database';
+import { Student, Bill, UnitType, BillStatus, isGradeMatch, formatGradeDisplay, SDIT_GRADES } from '../types/database';
 
 interface SppCellData {
   status: 'Lunas' | 'Belum Lunas' | 'Belum Dibayar' | 'Bebas' | 'Akan Berlangsung';
@@ -329,7 +329,7 @@ export const PaymentRecapPage: React.FC = () => {
       (row.phone && row.phone.includes(q));
 
     const matchesUnit = unitFilter === 'ALL' || row.unit === unitFilter;
-    const matchesGrade = gradeFilter === 'ALL' || row.grade === gradeFilter;
+    const matchesGrade = isGradeMatch(row.grade, gradeFilter, row.unit);
     const matchesStatus = statusFilter === 'ALL' || row.administrative_status === statusFilter;
     const matchesStudentStatus = studentStatusFilter === 'ALL' || row.student_status === studentStatusFilter;
 
@@ -360,7 +360,7 @@ export const PaymentRecapPage: React.FC = () => {
         if (r.student_status && r.student_status !== 'aktif') return null;
 
         const mUnit = targetUnit === 'ALL' || r.unit === targetUnit;
-        const mGrade = targetGrade === 'ALL' || r.grade === targetGrade;
+        const mGrade = isGradeMatch(r.grade, targetGrade, r.unit);
         if (!mUnit || !mGrade) return null;
 
         const unpaidMonths = monthsToCheck.filter((m) => {
@@ -541,7 +541,10 @@ export const PaymentRecapPage: React.FC = () => {
           <div className={`${showFilters ? 'block' : 'hidden sm:block'}`}>
             <select
               value={unitFilter}
-              onChange={(e) => setUnitFilter(e.target.value as any)}
+              onChange={(e) => {
+                setUnitFilter(e.target.value as any);
+                setGradeFilter('ALL');
+              }}
               className="w-full py-1.5 px-2.5 text-xs font-medium rounded-lg sm:rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
             >
               <option value="ALL">Semua Jenjang</option>
@@ -557,19 +560,35 @@ export const PaymentRecapPage: React.FC = () => {
               onChange={(e) => setGradeFilter(e.target.value)}
               className="w-full py-1.5 px-2.5 text-xs font-medium rounded-lg sm:rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
             >
-              <option value="ALL">Semua Kelas</option>
-              <optgroup label="TK IT">
-                <option value="A">Kelas A</option>
-                <option value="B">Kelas B</option>
-              </optgroup>
-              <optgroup label="SD IT">
-                <option value="I">Kelas I</option>
-                <option value="II">Kelas II</option>
-                <option value="III">Kelas III</option>
-                <option value="IV">Kelas IV</option>
-                <option value="V">Kelas V</option>
-                <option value="VI">Kelas VI</option>
-              </optgroup>
+              <option value="ALL">
+                {unitFilter === 'TK IT' ? 'Semua Kelas TK' : unitFilter === 'SD IT' ? 'Semua Kelas SD' : 'Semua Kelas'}
+              </option>
+              {unitFilter === 'TK IT' && (
+                <>
+                  <option value="Kelompok A">Kelompok A</option>
+                  <option value="Kelompok B">Kelompok B</option>
+                </>
+              )}
+              {unitFilter === 'SD IT' && (
+                <>
+                  {SDIT_GRADES.map((g) => (
+                    <option key={g} value={g}>Kelas {g}</option>
+                  ))}
+                </>
+              )}
+              {unitFilter === 'ALL' && (
+                <>
+                  <optgroup label="TK IT">
+                    <option value="Kelompok A">Kelompok A</option>
+                    <option value="Kelompok B">Kelompok B</option>
+                  </optgroup>
+                  <optgroup label="SD IT">
+                    {SDIT_GRADES.map((g) => (
+                      <option key={g} value={g}>Kelas {g}</option>
+                    ))}
+                  </optgroup>
+                </>
+              )}
             </select>
           </div>
 
@@ -814,7 +833,7 @@ export const PaymentRecapPage: React.FC = () => {
                       </div>
                     </td>
                     <td className="py-2 px-2.5 text-center text-slate-600 font-semibold">{row.unit}</td>
-                    <td className="py-2 px-2.5 text-center text-slate-700 font-semibold">{row.grade}</td>
+                    <td className="py-2 px-2.5 text-center text-slate-700 font-semibold whitespace-nowrap">{formatGradeDisplay(row.grade, row.unit)}</td>
                     <td className="py-2 px-2.5">
                       <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 whitespace-nowrap">
                         {row.administrative_status}
@@ -1212,7 +1231,7 @@ export const PaymentRecapPage: React.FC = () => {
         const matchingStudents = recapData
           .map((r) => {
             const mUnit = modalUnitTarget === 'ALL' || r.unit === modalUnitTarget;
-            const mGrade = modalGradeTarget === 'ALL' || r.grade === modalGradeTarget;
+            const mGrade = isGradeMatch(r.grade, modalGradeTarget, r.unit);
             if (!mUnit || !mGrade) return null;
 
             const unpaidMonths = monthsToCheck.filter((m) => {
@@ -1297,7 +1316,10 @@ export const PaymentRecapPage: React.FC = () => {
                     </label>
                     <select
                       value={modalUnitTarget}
-                      onChange={(e) => setModalUnitTarget(e.target.value as any)}
+                      onChange={(e) => {
+                        setModalUnitTarget(e.target.value as any);
+                        setModalGradeTarget('ALL');
+                      }}
                       className="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
                     >
                       <option value="ALL">Semua Jenjang</option>
@@ -1315,19 +1337,35 @@ export const PaymentRecapPage: React.FC = () => {
                       onChange={(e) => setModalGradeTarget(e.target.value)}
                       className="w-full text-xs font-semibold px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
                     >
-                      <option value="ALL">Semua Kelas</option>
-                      <optgroup label="TK IT">
-                        <option value="A">Kelas A</option>
-                        <option value="B">Kelas B</option>
-                      </optgroup>
-                      <optgroup label="SD IT">
-                        <option value="I">Kelas I</option>
-                        <option value="II">Kelas II</option>
-                        <option value="III">Kelas III</option>
-                        <option value="IV">Kelas IV</option>
-                        <option value="V">Kelas V</option>
-                        <option value="VI">Kelas VI</option>
-                      </optgroup>
+                      <option value="ALL">
+                        {modalUnitTarget === 'TK IT' ? 'Semua Kelas TK' : modalUnitTarget === 'SD IT' ? 'Semua Kelas SD' : 'Semua Kelas'}
+                      </option>
+                      {modalUnitTarget === 'TK IT' && (
+                        <>
+                          <option value="Kelompok A">Kelompok A</option>
+                          <option value="Kelompok B">Kelompok B</option>
+                        </>
+                      )}
+                      {modalUnitTarget === 'SD IT' && (
+                        <>
+                          {SDIT_GRADES.map((g) => (
+                            <option key={g} value={g}>Kelas {g}</option>
+                          ))}
+                        </>
+                      )}
+                      {modalUnitTarget === 'ALL' && (
+                        <>
+                          <optgroup label="TK IT">
+                            <option value="Kelompok A">Kelompok A</option>
+                            <option value="Kelompok B">Kelompok B</option>
+                          </optgroup>
+                          <optgroup label="SD IT">
+                            {SDIT_GRADES.map((g) => (
+                              <option key={g} value={g}>Kelas {g}</option>
+                            ))}
+                          </optgroup>
+                        </>
+                      )}
                     </select>
                   </div>
                 </div>
@@ -1380,7 +1418,7 @@ export const PaymentRecapPage: React.FC = () => {
                         <div key={idx} className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 flex items-center justify-between">
                           <div>
                             <span className="font-bold text-slate-800">{s.name}</span>
-                            <span className="text-[10px] text-slate-500 ml-1.5">({s.unit} · Kelas {s.grade})</span>
+                            <span className="text-[10px] text-slate-500 ml-1.5">({s.unit} · {formatGradeDisplay(s.grade, s.unit)})</span>
                           </div>
                           <div className="text-right">
                             <span className="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded font-bold mr-1.5">

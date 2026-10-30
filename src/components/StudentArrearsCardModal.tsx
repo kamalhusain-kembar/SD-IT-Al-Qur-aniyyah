@@ -10,7 +10,7 @@ import {
   Building2,
   Image as ImageIcon
 } from 'lucide-react';
-import { StudentCrossYearArrears } from '../types/database';
+import { StudentCrossYearArrears, formatGradeDisplay } from '../types/database';
 import html2canvas from 'html2canvas';
 import logoImg from '../assets/logo.png';
 
@@ -187,13 +187,13 @@ export const StudentArrearsCardModal: React.FC<StudentArrearsCardModalProps> = (
     text += `Orang Tua / Wali dari Ananda:\n`;
     text += `Nama Siswa : *${student.full_name}*\n`;
     text += `NIS        : ${student.nis || '-'}\n`;
-    text += `Jenjang/Kls: ${studentArrears.current_unit || 'SD IT'} · Kelas ${studentArrears.current_grade || '-'}\n\n`;
+    text += `Jenjang/Kls: ${studentArrears.current_unit || 'SD IT'} · ${formatGradeDisplay(studentArrears.current_grade, studentArrears.current_unit)}\n\n`;
     text += `Dengan ini kami sampaikan rincian kewajiban pembayaran yang masih tercatat pada sistem keuangan:\n\n`;
 
     studentArrears.years.forEach((y) => {
       const unpaidItems = y.bills_detail.filter((b) => b.remaining > 0 && b.status !== 'Akan Berlangsung');
       if (unpaidItems.length > 0) {
-        text += `📌 *Tahun Ajaran ${y.academic_year_name} (Kelas ${y.grade})*\n`;
+        text += `📌 *Tahun Ajaran ${y.academic_year_name} (${formatGradeDisplay(y.grade, y.unit)})*\n`;
         unpaidItems.forEach((b) => {
           text += ` • ${b.category_name}${b.billing_period ? ` (${b.billing_period})` : ''} : Rp${b.remaining.toLocaleString('id-ID')}\n`;
         });
@@ -411,7 +411,7 @@ export const StudentArrearsCardModal: React.FC<StudentArrearsCardModalProps> = (
                   <div>
                     <span className="text-slate-400 font-semibold block text-[10px] uppercase">Jenjang / Kelas</span>
                     <span className="font-bold text-emerald-900 text-xs block">
-                      {studentArrears.current_unit || 'SD IT'} · Kelas {studentArrears.current_grade || '-'}
+                      {studentArrears.current_unit || 'SD IT'} · {formatGradeDisplay(studentArrears.current_grade, studentArrears.current_unit)}
                     </span>
                   </div>
                   <div>
@@ -506,7 +506,7 @@ export const StudentArrearsCardModal: React.FC<StudentArrearsCardModalProps> = (
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-emerald-800" />
                         <span className="font-bold text-xs text-slate-800">
-                          Tahun Ajaran {year.academic_year_name} (Kelas {year.grade})
+                          Tahun Ajaran {year.academic_year_name} ({formatGradeDisplay(year.grade, year.unit)})
                         </span>
                         <span className="text-[10px] bg-white border border-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-medium">
                           {year.unit}

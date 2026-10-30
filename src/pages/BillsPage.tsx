@@ -23,7 +23,7 @@ import {
 import { useApp } from '../context/AppContext';
 import { billingService, SPP_MONTHS } from '../services/billingService';
 import { studentService } from '../services/studentService';
-import { Bill, BillingCategory, Student, BillStatus } from '../types/database';
+import { Bill, BillingCategory, Student, BillStatus, formatGradeDisplay } from '../types/database';
 
 export const BillsPage: React.FC = () => {
   const { selectedAcademicYearId, selectedAcademicYear, showToast, refreshKey } = useApp();
@@ -591,7 +591,7 @@ export const BillsPage: React.FC = () => {
                   <option value="">-- Pilih Siswa --</option>
                   {students.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {s.full_name} ({s.current_enrollment?.unit || 'SD IT'} - {s.current_enrollment?.grade || 'I'})
+                      {s.full_name} ({s.current_enrollment?.unit || 'SD IT'} - {formatGradeDisplay(s.current_enrollment?.grade, s.current_enrollment?.unit)})
                     </option>
                   ))}
                 </select>
@@ -886,7 +886,7 @@ export const BillsPage: React.FC = () => {
                     <option value="">-- Pilih Santri --</option>
                     {students.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {s.full_name} ({s.current_enrollment?.unit || 'SD IT'} - {s.current_enrollment?.grade || '-'})
+                        {s.full_name} ({s.current_enrollment?.unit || 'SD IT'} - {formatGradeDisplay(s.current_enrollment?.grade, s.current_enrollment?.unit)})
                       </option>
                     ))}
                   </select>
@@ -965,7 +965,7 @@ export const BillsPage: React.FC = () => {
                     <option value="">-- Pilih Santri --</option>
                     {students.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {s.full_name} ({s.current_enrollment?.unit || 'SD IT'} - {s.current_enrollment?.grade || '-'})
+                        {s.full_name} ({s.current_enrollment?.unit || 'SD IT'} - {formatGradeDisplay(s.current_enrollment?.grade, s.current_enrollment?.unit)})
                       </option>
                     ))}
                   </select>

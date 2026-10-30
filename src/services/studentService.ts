@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { Student, StudentEnrollment, UnitType, AdministrativeStatus, StudentStatus } from '../types/database';
+import { Student, StudentEnrollment, UnitType, AdministrativeStatus, StudentStatus, isGradeMatch } from '../types/database';
 import { localStore } from './dataStore';
 
 export interface StudentFilter {
@@ -59,7 +59,7 @@ function getLocalStudentsWithEnrollment(filters: StudentFilter = {}): Student[] 
   }
 
   if (filters.grade && filters.grade !== 'ALL') {
-    mapped = mapped.filter((s) => s.current_enrollment?.grade === filters.grade);
+    mapped = mapped.filter((s) => isGradeMatch(s.current_enrollment?.grade, filters.grade, s.current_enrollment?.unit));
   }
 
   if (filters.administrativeStatus && filters.administrativeStatus !== 'ALL') {
@@ -163,7 +163,7 @@ export const studentService = {
       }
 
       if (filters.grade && filters.grade !== 'ALL') {
-        students = students.filter((s) => s.current_enrollment?.grade === filters.grade);
+        students = students.filter((s) => isGradeMatch(s.current_enrollment?.grade, filters.grade, s.current_enrollment?.unit));
       }
 
       if (filters.administrativeStatus && filters.administrativeStatus !== 'ALL') {

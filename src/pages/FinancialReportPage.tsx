@@ -338,7 +338,7 @@ export const FinancialReportPage: React.FC = () => {
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          Rekapitulasi Unit SMP IT &amp; SMA IT
+          Rekapitulasi Unit TK IT &amp; SD IT
         </button>
       </div>
 

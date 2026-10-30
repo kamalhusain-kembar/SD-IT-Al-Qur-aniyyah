@@ -290,7 +290,8 @@ export const SettingsPage: React.FC = () => {
                     <ul className="list-disc list-inside text-slate-500 space-y-0.5 text-[10px]">
                       <li><strong>JK:</strong> L (Laki-laki) atau P (Perempuan)</li>
                       <li><strong>STATUS:</strong> Mampu, Yatim, Dhuafa, Beasiswa, Rekomendasi</li>
-                      <li><strong>JENJANG:</strong> TK IT, SD IT, SMP IT, atau SMA IT</li>
+                      <li><strong>JENJANG:</strong> TK IT atau SD IT</li>
+                      <li><strong>KELAS:</strong> Kelompok A, Kelompok B (TK IT); I s/d VI (SD IT)</li>
                     </ul>
                   </div>
 

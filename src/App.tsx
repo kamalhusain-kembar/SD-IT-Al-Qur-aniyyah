@@ -53,7 +53,7 @@ const AppContent: React.FC = () => {
       case 'dashboard':
         return { title: 'Dashboard Keuangan', subtitle: 'Ikhtisar tagihan, pembayaran, dan realisasi dana' };
       case 'students':
-        return { title: 'Data Master Siswa', subtitle: 'Pengelolaan data induk santri SMP IT & SMA IT' };
+        return { title: 'Data Master Siswa', subtitle: 'Pengelolaan data induk siswa TK IT & SD IT' };
       case 'academic-years':
         return { title: 'Tahun Ajaran', subtitle: 'Pengaturan periode tahun ajaran aktif dan arsip' };
       case 'bills':

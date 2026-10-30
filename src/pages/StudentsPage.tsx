@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { studentService, StudentFilter } from '../services/studentService';
-import { Student, UnitType, AdministrativeStatus, StudentStatus, Gender } from '../types/database';
+import { Student, UnitType, AdministrativeStatus, StudentStatus, Gender, formatGradeDisplay, TK_GRADES, SDIT_GRADES } from '../types/database';
 import { billingService } from '../services/billingService';
 import * as XLSX from 'xlsx';
 
@@ -98,7 +98,7 @@ export const StudentsPage: React.FC = () => {
       phone: '',
       student_status: 'aktif',
       unit: unitFilter !== 'ALL' ? unitFilter : 'SD IT',
-      grade: gradeFilter !== 'ALL' ? gradeFilter : 'I',
+      grade: gradeFilter !== 'ALL' ? gradeFilter : (unitFilter === 'TK IT' ? 'Kelompok A' : 'I'),
       administrative_status: 'Mampu',
       spp_nominal: '1335000',
       notes: '',
@@ -389,7 +389,11 @@ export const StudentsPage: React.FC = () => {
           <div>
             <select
               value={unitFilter}
-              onChange={(e) => setUnitFilter(e.target.value as any)}
+              onChange={(e) => {
+                const u = e.target.value as any;
+                setUnitFilter(u);
+                setGradeFilter('ALL');
+              }}
               className="w-full py-1.5 px-2.5 text-xs font-medium rounded-lg sm:rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
             >
               <option value="ALL">Semua Jenjang</option>
@@ -405,19 +409,35 @@ export const StudentsPage: React.FC = () => {
               onChange={(e) => setGradeFilter(e.target.value)}
               className="w-full py-1.5 px-2.5 text-xs font-medium rounded-lg sm:rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
             >
-              <option value="ALL">Semua Kelas</option>
-              <optgroup label="TK IT">
-                <option value="A">Kelas A</option>
-                <option value="B">Kelas B</option>
-              </optgroup>
-              <optgroup label="SD IT">
-                <option value="I">Kelas I</option>
-                <option value="II">Kelas II</option>
-                <option value="III">Kelas III</option>
-                <option value="IV">Kelas IV</option>
-                <option value="V">Kelas V</option>
-                <option value="VI">Kelas VI</option>
-              </optgroup>
+              <option value="ALL">
+                {unitFilter === 'TK IT' ? 'Semua Kelas TK' : unitFilter === 'SD IT' ? 'Semua Kelas SD' : 'Semua Kelas'}
+              </option>
+              {unitFilter === 'TK IT' && (
+                <>
+                  <option value="Kelompok A">Kelompok A</option>
+                  <option value="Kelompok B">Kelompok B</option>
+                </>
+              )}
+              {unitFilter === 'SD IT' && (
+                <>
+                  {SDIT_GRADES.map((g) => (
+                    <option key={g} value={g}>Kelas {g}</option>
+                  ))}
+                </>
+              )}
+              {unitFilter === 'ALL' && (
+                <>
+                  <optgroup label="TK IT">
+                    <option value="Kelompok A">Kelompok A</option>
+                    <option value="Kelompok B">Kelompok B</option>
+                  </optgroup>
+                  <optgroup label="SD IT">
+                    {SDIT_GRADES.map((g) => (
+                      <option key={g} value={g}>Kelas {g}</option>
+                    ))}
+                  </optgroup>
+                </>
+              )}
             </select>
           </div>
 
@@ -500,7 +520,7 @@ export const StudentsPage: React.FC = () => {
                         {student.gender === 'Laki-laki' ? 'L' : 'P'}
                       </td>
                       <td className="py-3 px-4 font-semibold text-slate-700">
-                        {enr ? `${enr.unit} · Kelas ${enr.grade}` : '-'}
+                        {enr ? `${enr.unit} · ${formatGradeDisplay(enr.grade, enr.unit)}` : '-'}
                       </td>
                       <td className="py-3 px-4">
                         <span
@@ -688,7 +708,7 @@ export const StudentsPage: React.FC = () => {
                       value={formData.unit}
                       onChange={(e) => {
                         const newUnit = e.target.value as UnitType;
-                        const defaultGrade = newUnit === 'TK IT' ? 'A' : 'I';
+                        const defaultGrade = newUnit === 'TK IT' ? 'Kelompok A' : 'I';
                         setFormData({ ...formData, unit: newUnit, grade: defaultGrade });
                       }}
                       className="w-full text-xs font-medium px-2 py-1.5 rounded-lg border border-slate-300 bg-white"
@@ -707,8 +727,8 @@ export const StudentsPage: React.FC = () => {
                     >
                       {formData.unit === 'TK IT' ? (
                         <>
-                          <option value="A">Kelas A</option>
-                          <option value="B">Kelas B</option>
+                          <option value="Kelompok A">Kelompok A</option>
+                          <option value="Kelompok B">Kelompok B</option>
                         </>
                       ) : (
                         <>
@@ -799,7 +819,7 @@ export const StudentsPage: React.FC = () => {
                   {detailStudent.full_name}
                 </h4>
                 <p className="text-xs text-slate-500">
-                  NIS: {detailStudent.nis || '-'} · {detailStudent.current_enrollment?.unit || 'SMP IT'} · Kelas {detailStudent.current_enrollment?.grade || '-'}
+                  NIS: {detailStudent.nis || '-'} · {detailStudent.current_enrollment?.unit || 'SD IT'} · {formatGradeDisplay(detailStudent.current_enrollment?.grade, detailStudent.current_enrollment?.unit)}
                 </p>
               </div>
               <button
